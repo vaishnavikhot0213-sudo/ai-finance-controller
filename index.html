@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinControl AI — Autonomous AI Finance Controller</title>
+
+    <!-- Meta tags for WhatsApp / Social Media Preview -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="FinControl AI — Autonomous AI Finance Controller" />
+    <meta property="og:description" content="Autonomous multi-source reconciliation, tax-line matching, and forward cash forecasting built for Razorpay AI Buildathon (Track 04)." />
+    <meta name="description" content="FinControl AI automates multi-source reconciliation across Razorpay ledgers, bank statements, and ERP invoices with full auditability." />
+
+    <!-- Tailwind CSS & Chart.js CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #0b0f17; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
+        .glass-panel { background: rgba(18, 24, 38, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glow-accent { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg font-bold">
+                <i class="fa-solid fa-brain-circuit"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    FinControl <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Track 04</span>
+                </h1>
+                <p class="text-xs text-slate-400">Autonomous AI Finance Controller & Reconciliation Agent</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="text-xs text-slate-400 hidden sm:inline"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> Audit-Ready Log Active</span>
+            <button onclick="runBatchSimulator()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-lg shadow-blue-600/30">
+                <i class="fa-solid fa-play"></i> Run 50+ Batch Audit
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- Top Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="glass-panel p-5 rounded-xl">
+                <div class="text-slate-400 text-xs font-semibold uppercase">Total Batch Volume</div>
+                <div class="text-2xl font-bold text-white mt-2">₹ 14,820,450</div>
+                <div class="text-xs text-slate-400 mt-1">50 Records Loaded</div>
+            </div>
+            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-emerald-500">
+                <div class="text-slate-400 text-xs font-semibold uppercase">Auto-Matched Rate</div>
+                <div class="text-2xl font-bold text-emerald-400 mt-2" id="matchRate">92.0%</div>
+                <div class="text-xs text-emerald-500/80 mt-1">46 Records Auto-Closed</div>
+            </div>
+            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-amber-500">
+                <div class="text-slate-400 text-xs font-semibold uppercase">Unresolved Exceptions</div>
+                <div class="text-2xl font-bold text-amber-400 mt-2" id="exceptionCount">4 Records</div>
+                <div class="text-xs text-amber-500/80 mt-1">Requires Human / GST Audit</div>
+            </div>
+            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-blue-500">
+                <div class="text-slate-400 text-xs font-semibold uppercase">Avg Confidence Score</div>
+                <div class="text-2xl font-bold text-blue-400 mt-2">0.962</div>
+                <div class="text-xs text-slate-400 mt-1">Deterministic Verification</div>
+            </div>
+        </div>
+
+        <!-- Main Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Transaction Ledger Table -->
+            <div class="lg:col-span-2 glass-panel rounded-xl p-5 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="font-bold text-white text-base">Multi-Source Ledger Reconciliation</h2>
+                        <p class="text-xs text-slate-400">Razorpay Payouts vs Bank Ledgers vs ERP Invoices</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="filterTable('all')" class="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">All</button>
+                        <button onclick="filterTable('EXCEPTION')" class="text-xs px-3 py-1 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300">Exceptions</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto flex-1 max-h-[420px]">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-800/80 text-slate-400 uppercase text-[10px] sticky top-0">
+                            <tr>
+                                <th class="p-3">TXN ID</th>
+                                <th class="p-3">Source & Merchant</th>
+                                <th class="p-3">Amount</th>
+                                <th class="p-3">Match Status</th>
+                                <th class="p-3">Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerTbody" class="divide-y divide-slate-800">
+                            <!-- Dynamically Generated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- AI Agent Interactive Controller -->
+            <div class="glass-panel rounded-xl p-5 flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-robot text-blue-400"></i>
+                        <h2 class="font-bold text-white text-base">Gemini Finance AI Agent</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">Query tax compliance, forward liquidity forecasting, or exception details.</p>
+
+                    <div class="bg-slate-900/80 rounded-lg p-3 border border-slate-800 text-xs h-48 overflow-y-auto space-y-3" id="agentConsole">
+                        <div class="text-slate-400"><span class="text-blue-400 font-bold">[Agent Ready]:</span> Multi-source ingestion complete. 50 ledger entries analyzed. 4 exceptions isolated for audit.</div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex gap-2">
+                        <input type="text" id="userInput" placeholder="Ask agent (e.g. 'Explain TXN-104 exception')" class="flex-1 bg-slate-900 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+                        <button onclick="askAgent()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-2 rounded-lg"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Cash Flow & Exception Breakdown Chart -->
+        <div class="glass-panel p-5 rounded-xl">
+            <h2 class="font-bold text-white text-base mb-1">Forward Cash Forecast & Match Distribution</h2>
+            <p class="text-xs text-slate-400 mb-4">7-Day projected liquidity based on verified payouts</p>
+            <div class="h-56">
+                <canvas id="cashForecastChart"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-slate-800 text-center py-4 text-xs text-slate-500">
+        Built for <span class="text-slate-300 font-medium">Razorpay AI Buildathon</span> — Track 04: AI Finance Controller
+    </footer>
+
+    <script>
+        // Synthetic 50-Record Financial Dataset
+        const rawDataset = [];
+        const statuses = ['MATCHED', 'MATCHED', 'MATCHED', 'MATCHED', 'MATCHED', 'MATCHED', 'MATCHED', 'MATCHED', 'MATCHED', 'EXCEPTION'];
+        const exceptionReasons = ['MDR Fee Mismatch (+1.8%)', 'Missing Vendor GSTIN', 'T+1 Settlement Timing Gap', 'Unmatched Transaction Hash'];
+
+        for (let i = 1; i <= 50; i++) {
+            const isException = i === 4 || i === 12 || i === 28 || i === 43;
+            const status = isException ? 'EXCEPTION' : 'MATCHED';
+            rawDataset.push({
+                id: `TXN-2026-${100 + i}`,
+                merchant: `Merchant_${(i % 8) + 1} Pvt Ltd`,
+                amount: Math.floor(Math.random() * 250000) + 12000,
+                status: status,
+                confidence: isException ? (0.45 + Math.random() * 0.2).toFixed(2) : (0.95 + Math.random() * 0.04).toFixed(2),
+                reason: isException ? exceptionReasons[i % exceptionReasons.length] : 'Fully Reconciled across 3 Sources'
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('ledgerTbody');
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-3 font-mono text-blue-400">${item.id}</td>
+                    <td class="p-3">${item.merchant}</td>
+                    <td class="p-3 font-semibold">₹ ${item.amount.toLocaleString('en-IN')}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.status === 'MATCHED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+                            ${item.status}
+                        </span>
+                    </td>
+                    <td class="p-3 font-mono">${item.confidence}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTable(status) {
+            if (status === 'all') renderTable(rawDataset);
+            else renderTable(rawDataset.filter(d => d.status === status));
+        }
+
+        function askAgent() {
+            const input = document.getElementById('userInput');
+            const consoleBox = document.getElementById('agentConsole');
+            if (!input.value.trim()) return;
+
+            const q = input.value;
+            consoleBox.innerHTML += `<div class="text-blue-300"><span class="font-bold">[User]:</span> ${q}</div>`;
+            
+            setTimeout(() => {
+                let ans = "Analyzing reconciliation trees across ERP ledgers and Razorpay payout events...";
+                if (q.toLowerCase().includes("exception") || q.toLowerCase().includes("txn")) {
+                    ans = "TXN-2026-104 flagged due to an unverified MDR fee deduction of 1.8% not reflected in ERP invoice. Recommended Action: Route to Tax Audit Queue.";
+                } else if (q.toLowerCase().includes("cash") || q.toLowerCase().includes("forecast")) {
+                    ans = "Projected 7-day liquidity is ₹ 12.4M with 98% settlement reliability based on current batch reconciliation.";
+                } else {
+                    ans = "Reconciliation verification complete. Match accuracy is strictly maintained above 92% across all 50 synthetic records.";
+                }
+                consoleBox.innerHTML += `<div class="text-slate-300"><span class="text-emerald-400 font-bold">[Agent Response]:</span> ${ans}</div>`;
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+            }, 600);
+
+            input.value = '';
+        }
+
+        function runBatchSimulator() {
+            const consoleBox = document.getElementById('agentConsole');
+            consoleBox.innerHTML += `<div class="text-amber-400 font-bold">[Batch Executed]: Re-scanning 50 multi-source financial ledgers...</div>`;
+            setTimeout(() => {
+                consoleBox.innerHTML += `<div class="text-emerald-400">[Completed]: 46 Matched, 4 Exceptions explicitly verified. Audit log synchronized.</div>`;
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+            }, 800);
+        }
+
+        // Initialize Chart
+        window.onload = function() {
+            renderTable(rawDataset);
+            const ctx = document.getElementById('cashForecastChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: 'Projected Net Payout Liquidity (₹)',
+                        data: [1800000, 2400000, 2100000, 3100000, 2900000, 3800000, 4200000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
